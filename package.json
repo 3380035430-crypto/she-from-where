@@ -1,0 +1,15 @@
+{
+  "name": "her-origin-story-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "她从何而来：真实 API 驱动的网页互动叙事试用版",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "test": "node --test test/api.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

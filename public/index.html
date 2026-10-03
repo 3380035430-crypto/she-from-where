@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#020202" />
+  <title>她从何而来 · 互动叙事</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <section id="access-gate" class="access-gate" aria-labelledby="access-title" hidden>
+    <div class="access-card">
+      <p class="access-whisper">她从何而来</p>
+      <h1 id="access-title">这段路还没有向所有人展开</h1>
+      <p>如果你手里有一枚体验码，可以从这里走进去。</p>
+      <form id="access-form" class="access-form">
+        <label class="field" for="access-code"><span>体验码</span><input id="access-code" name="accessCode" autocomplete="one-time-code" required placeholder="输入体验码" /></label>
+        <button class="primary-button" type="submit">让她开始 <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="access-message" class="access-message" role="status" aria-live="polite" hidden></p>
+    </div>
+  </section>
+  <section id="prologue" class="prologue" aria-label="故事入口">
+    <div class="prologue-copy" hidden>
+      <p class="prologue-whisper">她从何而来</p>
+      <h1 class="prologue-question">她此刻，正被什么困住？</h1>
+      <p class="prologue-line prologue-line-one">是一段说不出口的关系，<br />一次不知该如何回答的选择，<br />还是一条尚未被看见的路。</p>
+      <p class="prologue-line prologue-line-two">你握着一束很小的光，<br />只能照见眼前的一寸路。</p>
+      <p class="prologue-line prologue-line-three">在故事落下第一笔之前，<br />你可以替她选择一次转身，<br />也可以陪她在岔路口停一停。</p>
+      <p class="prologue-line prologue-line-four">只要你愿意，这段路就会开始。</p>
+      <button id="enter-story" class="prologue-button" type="button">替她落下第一笔 <span aria-hidden="true">→</span></button>
+    </div>
+  </section>
+  <section id="story-generator" class="story-generator" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <div class="generation-panel">
+      <div class="walking-scene" aria-hidden="true">
+        <div class="walking-horizon"></div>
+        <div class="walking-traveller">
+          <span class="traveller-shadow"></span>
+          <span class="traveller-head"></span>
+          <span class="traveller-hair"></span>
+          <span class="traveller-body"></span>
+          <span class="traveller-arm traveller-arm-left"></span>
+          <span class="traveller-arm traveller-arm-right"></span>
+          <span class="traveller-leg traveller-leg-left"></span>
+          <span class="traveller-leg traveller-leg-right"></span>
+        </div>
+      </div>
+      <p class="generation-eyebrow">她仍在向前</p>
+      <h2>故事正在生成<span class="generation-dots" aria-hidden="true"></span></h2>
+      <p id="generation-message" class="generation-message">正在把她走过的选择连成一条完整的路。</p>
+      <div class="generation-progress" aria-hidden="true"><span></span></div>
+      <p class="generation-note">完整短篇会在事实校验与终稿修订完成后出现，请稍等片刻。</p>
+    </div>
+  </section>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="返回首页">
+        <span class="brand-mark" aria-hidden="true">她</span>
+        <span><strong>她从何而来</strong><small>给她一条来路</small></span>
+      </a>
+      <div class="header-meta">
+        <button id="reset-story" class="icon-button" type="button" title="重新开始" aria-label="重新开始">↺</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="progress-wrap" aria-label="故事进度">
+        <div class="progress-labels"><span id="progress-step">为她留一个名字</span><span id="progress-count">1 / 6</span></div>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      </section>
+
+      <div id="notice" class="notice" role="status" hidden></div>
+
+      <section id="view-character" class="view active" aria-labelledby="character-title">
+        <div class="intro-copy">
+          <p class="eyebrow">从她的来处开始</p>
+          <h1 id="character-title">先为她留一个名字。</h1>
+          <p>名字落下之后，她才会慢慢显出轮廓。选一处她熟悉的地方，让她从那里出发。</p>
+        </div>
+        <form id="character-form" class="form-stack">
+          <label class="field"><span>她的名字 <em>必填</em></span><input id="character-name" name="name" maxlength="12" required placeholder="例如：林夏" autocomplete="off" /></label>
+          <div class="field-row">
+            <label class="field"><span>她正走在哪一段人生里</span><select id="life-stage" name="lifeStage"><option>成年大学生</option><option>成年初入社会</option><option>成年自由职业者</option></select></label>
+            <label class="field"><span>她身上最先被看见的性情 <small>最多两个</small></span><input id="traits" name="traits" maxlength="50" placeholder="例如：慢热、认真" autocomplete="off" /></label>
+          </div>
+          <fieldset class="field category-field"><legend>她会在哪里面对这件事？</legend><div class="choice-grid category-grid">
+            <label class="choice-card category-card"><input type="radio" name="category" value="family" checked /><span class="choice-icon">⌂</span><strong>家庭</strong><small>那些说不出口、又无法绕开的关系</small></label>
+            <label class="choice-card category-card"><input type="radio" name="category" value="campus" /><span class="choice-icon">▦</span><strong>校园</strong><small>作品、机会、合作与被看见</small></label>
+            <label class="choice-card category-card"><input type="radio" name="category" value="urban" /><span class="choice-icon">▥</span><strong>都市</strong><small>工作、生活与关系交错的现实选择</small></label>
+          </div></fieldset>
+          <button class="primary-button" type="submit">把名字交给她 <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+
+      <section id="view-scenario" class="view" aria-labelledby="scenario-title">
+        <div class="section-heading"><div><p class="eyebrow">第二步 · 找到一个起点</p><h1 id="scenario-title">哪件事，值得她亲自走一遍？</h1></div><button id="back-character" class="text-button" type="button">← 重新唤回她</button></div>
+        <p class="section-lead">这些起点从她的名字和处境里长出来。你可以听一个，也可以换一批，或者亲自写下她此刻要面对的事。</p>
+        <div id="proposal-list" class="proposal-list" aria-live="polite"></div>
+        <div class="scenario-actions"><button id="refresh-proposals" class="secondary-button" type="button">再听几个起点 <span aria-hidden="true">↻</span></button><button id="show-custom" class="secondary-button" type="button">亲自写下 <span aria-hidden="true">＋</span></button></div>
+        <div id="custom-panel" class="custom-panel" hidden><label class="field"><span>写下她的处境</span><textarea id="custom-scenario" maxlength="200" placeholder="写下她此刻遇到的具体事情，5–200字"></textarea><small class="counter"><span id="scenario-count">0</span> / 200</small></label><label class="field"><span>你希望她从这里走向哪里 <small>可不填</small></span><textarea id="scenario-expectation" maxlength="100" placeholder="例如：她能争取到一个清楚的安排"></textarea></label></div>
+        <div class="sticky-action"><button id="confirm-scenario" class="primary-button" type="button" disabled>就从这里开始 <span aria-hidden="true">→</span></button></div>
+      </section>
+
+      <section id="view-confirm" class="view" aria-labelledby="confirm-title">
+        <p class="eyebrow">落笔之前</p><h1 id="confirm-title">这就是她要面对的事。</h1>
+        <div id="confirm-card" class="confirm-card"></div>
+        <p class="muted">接下来，她会走进这件事，并在两个关键节点停下来。每一条路都会留下可以被看见的改变，但不会要求所有人立刻变成另一个人。</p>
+        <div class="button-row"><button id="edit-scenario" class="secondary-button" type="button">回去再想想</button><button id="start-story" class="primary-button" type="button">让她走进去 <span aria-hidden="true">→</span></button></div>
+      </section>
+
+      <section id="view-reading" class="view" aria-labelledby="reading-title">
+        <div class="reading-top"><div><p id="reading-stage" class="eyebrow">第一次选择</p><h1 id="reading-title">她站在故事里。</h1></div><span id="route-badge" class="route-badge">她正在路上</span></div>
+        <div id="reading-timeline" class="reading-timeline"></div>
+        <div id="choice-panel" class="choice-panel"></div>
+      </section>
+
+      <section id="view-ending" class="view" aria-labelledby="ending-title">
+        <p class="eyebrow">她走到了这里</p><h1 id="ending-title">这个结果，属于她的选择。</h1>
+        <article id="ending-card" class="story-card ending-card"></article>
+        <div class="button-row"><button id="other-route" class="secondary-button" type="button">让她试试另一条路</button><button id="compile-story" class="primary-button" type="button">看见她走过的路 <span aria-hidden="true">→</span></button></div>
+        <div id="route-list" class="saved-routes"></div>
+      </section>
+
+      <section id="view-compiled" class="view" aria-labelledby="compiled-title">
+        <p class="eyebrow">她从何而来</p><h1 id="compiled-title">把这段路写下来。</h1>
+        <article id="compiled-card" class="compiled-card"></article>
+        <div class="button-row"><button id="back-ending" class="secondary-button" type="button">← 回到这里</button><button id="copy-story" class="secondary-button" type="button">留下这一页</button><button id="download-story" class="primary-button" type="button">把故事带走 <span aria-hidden="true">↓</span></button></div>
+      </section>
+    </main>
+    <footer><span>每一次选择，都为她留下新的来处。</span><span id="usage-summary" hidden></span></footer>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
