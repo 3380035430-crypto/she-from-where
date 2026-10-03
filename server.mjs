@@ -97,6 +97,11 @@ function problem(status, code, message, extra = {}) {
   const error = new Error(message); error.status = status; error.code = code; Object.assign(error, extra); return error;
 }
 
+function logDify(event, fields = {}) {
+  // Keep production diagnostics useful without logging prompts, story text, or credentials.
+  console.log(`[dify] ${event} ${JSON.stringify(fields)}`);
+}
+
 function parseJsonBody(req) {
   return new Promise((resolvePromise, reject) => {
     let body = ''; let size = 0;
@@ -357,9 +362,10 @@ function difyUsage(payload) {
 }
 
 export class DifyStoryProvider extends StoryProvider {
-  async runWorkflow(plan, input, timeout) {
+  async runWorkflow(plan, input, timeout, attempt = 0) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
+    logDify('request', { task: plan.task, attempt: attempt + 1, timeoutMs: timeout });
     try {
       const response = await fetch(`${String(this.env.DIFY_BASE_URL || '').replace(/\/$/, '')}/workflows/run`, {
         method: 'POST',
@@ -380,18 +386,43 @@ export class DifyStoryProvider extends StoryProvider {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         const detail = payload?.message || payload?.error?.message || '';
+        logDify('http_error', {
+          task: plan.task,
+          attempt: attempt + 1,
+          status: response.status,
+          detail: String(detail).slice(0, 240),
+        });
         if ([401, 403].includes(response.status)) throw problem(502, 'API_UNAUTHORIZED', 'Dify 应用密钥无效、未授权或工作流尚未发布。');
         if (response.status === 402) throw problem(502, 'API_BALANCE', 'Dify 或模型账户额度不足，本次生成未完成。');
         if (response.status === 429) throw problem(429, 'API_RATE_LIMIT', '工作流正在限流，请稍后重试。');
         throw problem(502, 'API_ERROR', detail || 'Dify 工作流返回错误。');
       }
       if (payload?.data?.status && payload.data.status !== 'succeeded') {
+        logDify('workflow_error', {
+          task: plan.task,
+          attempt: attempt + 1,
+          status: payload.data.status,
+          error: String(payload.data.error || '').slice(0, 240),
+        });
         throw problem(502, 'API_ERROR', payload.data.error || 'Dify 工作流没有成功完成。');
       }
+      logDify('response', {
+        task: plan.task,
+        attempt: attempt + 1,
+        status: response.status,
+        workflowStatus: payload?.data?.status || 'unknown',
+        outputKeys: Object.keys(payload?.data?.outputs || {}),
+      });
       return payload;
     } catch (error) {
-      if (error.name === 'AbortError') throw problem(504, 'API_TIMEOUT', '故事工作流运行超时，请稍后重试。');
-      if (error.name === 'TypeError' && error.message === 'fetch failed') throw problem(502, 'API_NETWORK_ERROR', '无法连接故事工作流，请检查网络后重试。');
+      if (error.name === 'AbortError') {
+        logDify('timeout', { task: plan.task, attempt: attempt + 1, timeoutMs: timeout });
+        throw problem(504, 'API_TIMEOUT', '故事工作流运行超时，请稍后重试。');
+      }
+      if (error.name === 'TypeError' && error.message === 'fetch failed') {
+        logDify('network_error', { task: plan.task, attempt: attempt + 1 });
+        throw problem(502, 'API_NETWORK_ERROR', '无法连接故事工作流，请检查网络后重试。');
+      }
       throw error;
     } finally {
       clearTimeout(timer);
@@ -410,7 +441,7 @@ export class DifyStoryProvider extends StoryProvider {
     let lastModel = 'dify-workflow';
 
     for (let attempt = 0; attempt <= maxRepairAttempts; attempt += 1) {
-      const payload = await this.runWorkflow(plan, requestInput, timeout);
+      const payload = await this.runWorkflow(plan, requestInput, timeout, attempt);
       const usage = difyUsage(payload);
       totalUsage = {
         prompt_tokens: totalUsage.prompt_tokens + usage.prompt_tokens,
@@ -424,6 +455,13 @@ export class DifyStoryProvider extends StoryProvider {
         validateModelResult(task, parsed);
         return { response: parsed, usage: totalUsage, model: lastModel };
       } catch (error) {
+        logDify('validation', {
+          task,
+          attempt: attempt + 1,
+          maxAttempts: maxRepairAttempts + 1,
+          code: error.code || 'MODEL_VALIDATION_ERROR',
+          message: String(error.message || '').slice(0, 240),
+        });
         if (task !== 'compile' || attempt >= maxRepairAttempts) throw error;
         const output = payload?.data?.outputs?.[this.env.DIFY_RESPONSE_FIELD || 'result_json'] ?? null;
         requestInput = {
@@ -473,6 +511,7 @@ export function createApp(overrides = {}) {
       return { job: db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId), result: response };
     } catch (error) {
       db.prepare('UPDATE jobs SET status = ?, error_json = ?, duration_ms = ?, completed_at = ? WHERE id = ?').run('failed', json({ code: error.code || 'SERVER_ERROR', message: error.message }), Date.now() - started, now(), jobId);
+      console.error(`[generation] failed ${JSON.stringify({ task, jobId, code: error.code || 'SERVER_ERROR', status: error.status || 500, durationMs: Date.now() - started })}`);
       throw error;
     }
   }
